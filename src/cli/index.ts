@@ -5,6 +5,7 @@ import { DEFAULT_APP_NAME } from "../consts.js";
 import ora from "ora";
 import gradient from "gradient-string";
 import figlet from "figlet";
+import fs from "fs";
 
 let _repoName: string;
 let spineer: any;
@@ -18,7 +19,13 @@ async function getDirName() {
       return DEFAULT_APP_NAME;
     },
   });
-  _repoName = answers.repo_name;
+  if (fs.existsSync(answers.repo_name)) {
+    console.error("folder already exists");
+
+    process.exit(1);
+  } else {
+    _repoName = answers.repo_name;
+  }
 }
 
 async function createRepo() {
@@ -70,9 +77,16 @@ async function installingPackages() {
         console.log("stderr: ", stderr);
       }
     });
+  } else {
+    figlet("Hacking SE 2", (err, data) => {
+      console.log(gradient.pastel.multiline(data));
+      if (err) {
+        console.log(err);
+      }
+      process.exit(0);
+    });
   }
 }
 
 await getDirName();
 await createRepo();
-// await installingPackages();
