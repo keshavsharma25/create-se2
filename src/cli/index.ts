@@ -21,16 +21,15 @@ async function getDirName() {
 async function createRepo() {
   ora("Creating repo...").start();
   await exec(
-    `cd ../ && git clone https://github.com/scaffold-eth/scaffold-eth-2.git ${_repoName}`,
+    `cd .. && git clone https://github.com/scaffold-eth/scaffold-eth-2.git ${_repoName} && cd se2 && rm -rf .git`,
     (err, stdout, stderr) => {
       if (err) {
-        console.log(err);
-        ora("Repo creation failed").stop();
+        ora("app creation failed").stop();
         return;
       }
       console.log("stdout: ", stdout);
       if (stderr) {
-        ora("Repo created successfully").succeed();
+        ora("scaffold-eth app created successfully").succeed();
         ora("").stop();
         process.exit(0);
       }
