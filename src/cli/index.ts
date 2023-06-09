@@ -3,6 +3,8 @@ import { exec } from "child_process";
 import inquirer from "inquirer";
 import { DEFAULT_APP_NAME } from "../consts.js";
 import ora from "ora";
+import gradient from "gradient-string";
+import figlet from "figlet";
 
 let _repoName: string;
 let spineer: any;
@@ -21,7 +23,7 @@ async function getDirName() {
 
 async function createRepo() {
   spineer = ora("Creating repo...").start();
-  await exec(
+  exec(
     `cd .. && git clone https://github.com/scaffold-eth/scaffold-eth-2.git ${_repoName} && cd se2 && rm -rf .git`,
     (err, stdout, stderr) => {
       if (err) {
@@ -56,14 +58,19 @@ async function installingPackages() {
       }
       if (stdout) {
         ora().succeed("Packages installed succesfully");
-        process.exit(0);
+        figlet("Hacking SE 2", (err, data) => {
+          console.log(gradient.pastel.multiline(data));
+          if (err) {
+            console.log(err);
+          }
+          process.exit(0);
+        });
       }
       if (stderr) {
         console.log("stderr: ", stderr);
       }
     });
   }
-  return;
 }
 
 await getDirName();
