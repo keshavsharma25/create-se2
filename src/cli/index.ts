@@ -1,92 +1,84 @@
 #!/usr/bin/env node
-import { exec } from "child_process";
+import { Command } from "commander";
 import inquirer from "inquirer";
 import { DEFAULT_APP_NAME } from "../consts.js";
-import ora from "ora";
-import gradient from "gradient-string";
-import figlet from "figlet";
-import fs from "fs";
+import { ifDirExists, createRepo, figletText } from "../utils/cli.js";
+import chalk from "chalk";
 
-let _repoName: string;
-let spineer: any;
+export interface Options {
+  appName: string;
+  flags: {
+    installPkg: boolean;
+  };
+}
 
-async function getDirName() {
-  const answers = await inquirer.prompt({
-    name: "repo_name",
+const defaultOptions: Readonly<Options> = {
+  appName: DEFAULT_APP_NAME,
+  flags: {
+    installPkg: true,
+  },
+};
+
+const runCli = async () => {
+  const program = new Command().name("create-se-2");
+  const options: Options = { ...defaultOptions };
+
+  program
+    .description("Create a new scaffold-eth-2 app")
+    .option("-n, --name <name>", "name of the app")
+    .option("-i, --install", "install packages");
+
+  program.parse(process.argv);
+
+  figletText("Scaffold-eth-2");
+
+  const args = program.opts();
+
+  args["name"]
+    ? (options.appName = args["name"])
+    : (options.appName = await getRepoName());
+
+  args["install"]
+    ? (options.flags.installPkg = args["install"])
+    : (options.flags.installPkg = await getInstallPkgs());
+
+  await createRepo(options);
+};
+
+const getRepoName = async (): Promise<string> => {
+  const { repoName } = await inquirer.prompt({
+    name: "repoName",
     type: "input",
-    message: "Enter the name of repo",
-    default() {
-      return DEFAULT_APP_NAME;
-    },
-  });
-  if (fs.existsSync(answers.repo_name)) {
-    console.error("folder already exists");
+    message: "What would you like to name your app?",
+    default: DEFAULT_APP_NAME,
+    validate: async (input: string) => {
+      if (input.length === 0) return "Please enter a name for your app";
 
-    process.exit(1);
-  } else {
-    _repoName = answers.repo_name;
-  }
-}
+      if (await ifDirExists(input))
+        return (
+          chalk.red(` ${chalk.bold(input)} `) +
+          "already exists in the current directory. Please choose another name."
+        );
 
-async function createRepo() {
-  spineer = ora("Creating repo...").start();
-  exec(
-    `cd .. && git clone https://github.com/scaffold-eth/scaffold-eth-2.git ${_repoName} && cd se2 && rm -rf .git`,
-    (err, stdout, stderr) => {
-      if (err) {
-        spineer.stop("Repo creation failed");
-        return;
-      }
-      if (stdout) {
-        console.log("stdout: ", stdout);
-      }
-      if (stderr) {
-        spineer.succeed("scafold-eth app created succesfully");
-        installingPackages();
-      }
-    }
-  );
-}
-
-async function installingPackages() {
-  const answers = await inquirer.prompt({
-    name: "install_packages",
-    type: "confirm",
-    message: "Do you want to install packages?",
-    default() {
       return true;
     },
+    transformer: (input: string) => {
+      return chalk.cyan(input);
+    },
   });
-  if (answers.install_packages) {
-    ora("intalling packages..").start();
-    await exec(`cd .. && cd ${_repoName} && yarn`, (err, stdout, stderr) => {
-      if (err) {
-        ora("Package installation failed").stop();
-      }
-      if (stdout) {
-        ora().succeed("Packages installed succesfully");
-        figlet("Hacking SE 2", (err, data) => {
-          console.log(gradient.pastel.multiline(data));
-          if (err) {
-            console.log(err);
-          }
-          process.exit(0);
-        });
-      }
-      if (stderr) {
-        console.log("stderr: ", stderr);
-      }
-    });
-  } else {
-    figlet("Hacking SE 2", (err, data) => {
-      console.log(gradient.pastel.multiline(data));
-      if (err) {
-        console.log(err);
-      }
-      process.exit(0);
-    });
-  }
-}
 
-await getDirName();
-await createRepo();
+  return repoName;
+};
+
+const getInstallPkgs = async (): Promise<boolean> => {
+  const { bool } = await inquirer.prompt({
+    name: "bool",
+    type: "confirm",
+    message: "Would you like to install packages?",
+    default: defaultOptions.flags.installPkg,
+  });
+
+  return bool;
+};
+
+await runCli();
