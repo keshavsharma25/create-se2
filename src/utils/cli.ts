@@ -1,11 +1,12 @@
-import fs from "fs";
-import { exec } from "child_process";
-import { REPO_URL } from "../consts.js";
-import ora from "ora";
 import chalk from "chalk";
-import { Options } from "../cli/index.js";
-import gradient from "gradient-string";
+import { exec } from "child_process";
 import figlet from "figlet";
+import fs from "fs";
+import gradient from "gradient-string";
+import ora from "ora";
+import { Options } from "../cli/index.js";
+import { REPO_URL } from "../consts.js";
+import { logger } from "./logger.js";
 
 const spinner = (text: string) => {
   return ora({
@@ -49,8 +50,7 @@ export const createRepo = async (options: Options) => {
       `git clone ${REPO_URL} ${name} && cd ${name} && rm -rf .git`,
       async (err) => {
         if (err) {
-          console.log("\n");
-          console.log("in error: " + err.message);
+          logger.error("\nin error: " + err.message);
           spin.stop();
         }
 
@@ -66,7 +66,7 @@ export const createRepo = async (options: Options) => {
 };
 
 export const installPkgs = async (options: Options) => {
-  if (options.flags.installPkg) {
+  if (options.flags.installPkg === true) {
     const spin = spinner("Installing packages...").start();
 
     exec(`cd ${options.appName} && yarn`, (err, _, stderr) => {
