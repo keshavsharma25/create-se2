@@ -1,5 +1,4 @@
-import chalk from "chalk";
-import { exec } from "child_process";
+import { execa } from "execa";
 import figlet from "figlet";
 import fs from "fs";
 import gradient from "gradient-string";
@@ -11,7 +10,7 @@ import { logger } from "./logger.js";
 const spinner = (text: string) => {
   return ora({
     text,
-    spinner: "dots",
+    spinner: "circleQuarters",
     color: "blue",
   });
 };
@@ -43,23 +42,54 @@ export const ifDirExists = async (name: string) => {
 export const createRepo = async (options: Options) => {
   const name = options.appName;
   if (!(await ifDirExists(name))) {
-    const spin = spinner(
-      `Creating ${name} directory and cloning the repo...`
-    ).start();
-    exec(
-      `git clone ${REPO_URL} ${name} && cd ${name} && rm -rf .git`,
-      async (err) => {
-        if (err) {
-          logger.error("\nin error: " + err.message);
-          spin.stop();
-        }
+    const spin = spinner(`Creating ${name} directory and cloning the repo...`);
+    spin.start();
+    const filepath = `${process.cwd()}/${options.appName}`;
 
-        spin.succeed(`${name} directory created and repo cloned`);
-        await installPkgs(options);
+    try {
+      await execa("git", ["clone", REPO_URL, name], { cwd: process.cwd() });
+      await execa("rm", ["-rf", ".git"], { cwd: filepath });
+      spin.succeed(`${name} directory created and repo cloned`);
+    } catch (err) {
+      if (err instanceof Error) {
+        logger.error(err.message);
+        spin.stopAndPersist({
+          symbol: "❌",
+          text: "Directory creation and repo cloning failed",
+        });
       }
-    );
+    }
 
     return true;
+  }
+
+  return false;
+};
+
+export const initGit = async (options: Options) => {
+  const filepath = `${process.cwd()}/${options.appName}`;
+
+  if (options.flags.initGit === true) {
+    const spin = spinner("Initializing git...").start();
+
+    try {
+      await execa("git", ["init"], { cwd: filepath });
+      await execa("git", ["add", "."], { cwd: filepath });
+      await execa("git", ["commit", "-m", "Initial Commit"], { cwd: filepath });
+      spin.succeed("Git initialized");
+
+      return true;
+    } catch (err) {
+      if (err instanceof Error) {
+        logger.error(err.message);
+        spin.stopAndPersist({
+          symbol: "❌",
+          text: "Git initialization failed",
+        });
+
+        return false;
+      }
+    }
   }
 
   return false;
@@ -68,30 +98,24 @@ export const createRepo = async (options: Options) => {
 export const installPkgs = async (options: Options) => {
   if (options.flags.installPkg === true) {
     const spin = spinner("Installing packages...").start();
+    const filepath = `${process.cwd()}/${options.appName}`;
 
-    exec(`cd ${options.appName} && yarn`, (err, _, stderr) => {
-      if (err) {
-        chalk.red(err.message);
-        spin.stopAndPersist({
-          symbol: "❌",
-          text: "Packages installation failed",
-        });
-        return;
-      }
-
-      if (stderr) {
-        chalk.red(stderr);
-        spin.stopAndPersist({
-          symbol: "❌",
-          text: "Packages installation failed",
-        });
-        return;
-      }
-
+    try {
+      await execa("yarn", { cwd: filepath });
       spin.succeed("Packages installed");
-    });
 
-    return true;
+      return true;
+    } catch (err) {
+      if (err instanceof Error) {
+        logger.error(err.message);
+        spin.stopAndPersist({
+          symbol: "❌",
+          text: "Packages installation failed",
+        });
+
+        return false;
+      }
+    }
   }
 
   return false;

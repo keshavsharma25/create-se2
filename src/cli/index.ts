@@ -1,9 +1,15 @@
 #!/usr/bin/env node
+import chalk from "chalk";
 import { Command } from "commander";
 import inquirer from "inquirer";
 import { DEFAULT_APP_NAME } from "../consts.js";
-import { ifDirExists, createRepo, figletText } from "../utils/cli.js";
-import chalk from "chalk";
+import {
+  createRepo,
+  figletText,
+  ifDirExists,
+  initGit,
+  installPkgs,
+} from "../utils/cli.js";
 import { logger } from "../utils/logger.js";
 
 export interface Options {
@@ -49,22 +55,17 @@ const runCli = async () => {
     )
     .addHelpText(
       "afterAll",
-      `\nThe create-se2 was inspired by ${chalk
+      `\ncreate-se2 is a template CLI tool built to create ${chalk
         .hex("#E8DCFF")
-        .bold(
-          "scaffold-eth-2"
-        )} and has been used to build awesome fullstack decentralized applications using buidlguidl:${chalk.underline(
-        "scaffold-eth"
-      )} \n`
+        .bold("scaffold-eth-2")} dapps.`
     );
 
   program.parse(process.argv);
 
-  figletText(" Scaffold-eth-2");
+  figletText("create - se 2");
   showDescription();
 
   const args = program.opts();
-  console.log(args);
 
   const appName = program.args[0];
 
@@ -93,6 +94,30 @@ const runCli = async () => {
   }
 
   await createRepo(options);
+  await installPkgs(options);
+  await initGit(options);
+
+  logger.success(
+    `\nYour ${chalk.bold(options.appName)} app has been created successfully!`
+  );
+
+  logger.plain(
+    "\n\nTo get started, run the following commands:",
+    `\n\n\t${chalk.whiteBright(`cd ${options.appName}`)}`,
+    `\n\n\t${chalk.whiteBright("yarn start")} ${chalk.gray(
+      "// start your NextJS app"
+    )}`,
+    `\n\n\t${chalk.whiteBright("yarn chain")} ${chalk.gray(
+      "// start your Local Hardhat node"
+    )}`,
+    `\n\n\t${chalk.whiteBright("yarn deploy")} ${chalk.gray(
+      "// deploy your contracts to your local chain"
+    )}`,
+    `\n\n\t${chalk.whiteBright("yarn fork")} ${chalk.gray(
+      "// fork the mainnet to your local chain"
+    )}`,
+    `\n\n`
+  );
 };
 
 const getRepoName = async (): Promise<string> => {

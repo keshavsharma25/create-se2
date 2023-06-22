@@ -10,6 +10,9 @@ export const logger = {
   info(...args: unknown[]) {
     console.log(chalk.cyan(...args));
   },
+  plain(...args: unknown[]) {
+    console.log(...args);
+  },
   success(...args: unknown[]) {
     console.log(chalk.green(...args));
   },
