@@ -50,14 +50,14 @@ const runCli = async () => {
     )
     .option(
       "-y, --default",
-      "By default, the CLI will use all defaults to create a se2 dapp",
+      "By default, the CLI will use all defaults to create a se2 app",
       false
     )
     .addHelpText(
       "afterAll",
       `\ncreate-se2 is a template CLI tool built to create ${chalk
         .hex("#E8DCFF")
-        .bold("scaffold-eth-2")} dapps.`
+        .bold("scaffold-eth-2")} apps.`
     );
 
   program.parse(process.argv);
@@ -103,19 +103,21 @@ const runCli = async () => {
 
   logger.plain(
     "\n\nTo get started, run the following commands:",
-    `\n\n\t${chalk.whiteBright(`cd ${options.appName}`)}`,
-    `\n\n\t${chalk.whiteBright("yarn start")} ${chalk.gray(
-      "// start your NextJS app"
-    )}`,
-    `\n\n\t${chalk.whiteBright("yarn chain")} ${chalk.gray(
-      "// start your Local Hardhat node"
-    )}`,
-    `\n\n\t${chalk.whiteBright("yarn deploy")} ${chalk.gray(
-      "// deploy your contracts to your local chain"
-    )}`,
-    `\n\n\t${chalk.whiteBright("yarn fork")} ${chalk.gray(
-      "// fork the mainnet to your local chain"
-    )}`,
+    `\n\n\t${
+      chalk.gray.bold("$ ") + chalk.whiteBright(`cd ${options.appName}`)
+    }`,
+    `\n\n\t${
+      chalk.gray.bold("$ ") + chalk.whiteBright("yarn start")
+    } ${chalk.gray("// start your NextJS app")}`,
+    `\n\n\t${
+      chalk.gray.bold("$ ") + chalk.whiteBright("yarn chain")
+    } ${chalk.gray("// start your Local Hardhat node")}`,
+    `\n\n\t${
+      chalk.gray.bold("$ ") + chalk.whiteBright("yarn deploy")
+    } ${chalk.gray("// deploy your contracts to your local chain")}`,
+    `\n\n\t${
+      chalk.gray.bold("$ ") + chalk.whiteBright("yarn fork")
+    } ${chalk.gray("// fork the mainnet to your local chain")}`,
     `\n\n`
   );
 };

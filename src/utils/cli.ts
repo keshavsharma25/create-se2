@@ -6,6 +6,7 @@ import ora from "ora";
 import { Options } from "../cli/index.js";
 import { REPO_URL } from "../consts.js";
 import { logger } from "./logger.js";
+import chalk from "chalk";
 
 const spinner = (text: string) => {
   return ora({
@@ -49,7 +50,8 @@ export const createRepo = async (options: Options) => {
     try {
       await execa("git", ["clone", REPO_URL, name], { cwd: process.cwd() });
       await execa("rm", ["-rf", ".git"], { cwd: filepath });
-      spin.succeed(`${name} directory created and repo cloned`);
+      // add a great spin.succeed message
+      spin.succeed(`${chalk.blue(name)} created and repo cloned successfully!`);
     } catch (err) {
       if (err instanceof Error) {
         logger.error(err.message);
@@ -97,12 +99,12 @@ export const initGit = async (options: Options) => {
 
 export const installPkgs = async (options: Options) => {
   if (options.flags.installPkg === true) {
-    const spin = spinner("Installing packages...").start();
+    const spin = spinner("Yarn installing...").start();
     const filepath = `${process.cwd()}/${options.appName}`;
 
     try {
       await execa("yarn", { cwd: filepath });
-      spin.succeed("Packages installed");
+      spin.succeed("Yarn installed");
 
       return true;
     } catch (err) {
