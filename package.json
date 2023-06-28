@@ -1,8 +1,8 @@
 {
-  "name": "se2-cli",
+  "name": "create-se2",
   "version": "1.0.0",
-  "description": "",
-  "main": "src/cli.ts",
+  "description": "CLI tool to create a new scaffold-eth-2 project",
+  "main": "src/cli/index.ts",
   "type": "module",
   "dist": {
     "type": "module",
@@ -17,7 +17,15 @@
     "start": "node dist/cli/index.js",
     "test": "jest"
   },
-  "keywords": [],
+  "keywords": [
+    "scaffold-eth-2",
+    "typescript",
+    "cli",
+    "dapp",
+    "ethereum",
+    "hardhat",
+    "starter-kit"
+  ],
   "author": "",
   "license": "ISC",
   "devDependencies": {
