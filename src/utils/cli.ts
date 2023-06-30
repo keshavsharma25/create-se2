@@ -50,7 +50,7 @@ export const createRepo = async (options: Options) => {
     try {
       await execa("git", ["clone", REPO_URL, name], { cwd: process.cwd() });
       await execa("rm", ["-rf", ".git"], { cwd: filepath });
-      // add a great spin.succeed message
+
       spin.succeed(`${chalk.blue(name)} created and repo cloned successfully!`);
     } catch (err) {
       if (err instanceof Error) {
@@ -121,4 +121,22 @@ export const installPkgs = async (options: Options) => {
   }
 
   return false;
+};
+
+export const isGit = async (dir: string) => {
+  try {
+    await execa("git", ["--version"], { cwd: dir });
+    return true;
+  } catch (_e) {
+    return false;
+  }
+};
+
+export const isYarn = async (dir: string) => {
+  try {
+    await execa("yarn", ["--version"], { cwd: dir });
+    return true;
+  } catch (_e) {
+    return false;
+  }
 };
