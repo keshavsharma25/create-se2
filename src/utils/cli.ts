@@ -140,3 +140,18 @@ export const isYarn = async (dir: string) => {
     return false;
   }
 };
+
+export const checkNodeVersion = async (dir: string) => {
+  try {
+    const { stdout: version } = await execa("node", ["--version"], {
+      cwd: dir,
+    });
+
+    const ver = version.split("v")[1];
+    const major = parseInt(ver?.split(".")[0] as string);
+
+    return major >= 18;
+  } catch (err) {
+    return false;
+  }
+};

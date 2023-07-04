@@ -2,8 +2,9 @@
 import chalk from "chalk";
 import { Command } from "commander";
 import inquirer from "inquirer";
-import { DEFAULT_APP_NAME } from "../consts.js";
+import { CREATE_SCAFFOLD_ETH, DEFAULT_APP_NAME } from "../consts.js";
 import {
+  checkNodeVersion,
   createRepo,
   figletText,
   ifDirExists,
@@ -29,7 +30,7 @@ const defaultOptions: Readonly<Options> = {
 };
 
 const runCli = async () => {
-  const program = new Command().name("create-se-2");
+  const program = new Command().name(CREATE_SCAFFOLD_ETH);
   const options: Options = { ...defaultOptions };
 
   program
@@ -63,7 +64,12 @@ const runCli = async () => {
   program.parse(process.argv);
 
   figletText("create - se 2");
-  showDescription();
+
+  if (!(await checkNodeVersion(process.cwd()))) {
+    logger.warn(
+      "\nScaffold-eth-2 requires Node.js version >= 18 to make it work properly. Please update your Node.js version.\n"
+    );
+  }
 
   const args = program.opts();
 
@@ -167,10 +173,6 @@ const getInitGit = async (): Promise<boolean> => {
   });
 
   return bool;
-};
-
-const showDescription = () => {
-  console.log();
 };
 
 await runCli();
