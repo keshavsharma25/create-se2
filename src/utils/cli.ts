@@ -7,6 +7,7 @@ import { Options } from "../cli/index.js";
 import { REPO_URL } from "../consts.js";
 import { logger } from "./logger.js";
 import chalk from "chalk";
+import { execSync } from "child_process";
 
 const spinner = (text: string) => {
   return ora({
@@ -48,6 +49,13 @@ export const createRepo = async (options: Options) => {
     const filepath = `${process.cwd()}/${options.appName}`;
 
     try {
+      if (!(await isGit())) {
+        spin.fail(
+          "Git is not installed! Go to https://git-scm.com/downloads to install it."
+        );
+        return false;
+      }
+
       await execa("git", ["clone", REPO_URL, name], { cwd: process.cwd() });
       await execa("rm", ["-rf", ".git"], { cwd: filepath });
 
@@ -75,6 +83,13 @@ export const initGit = async (options: Options) => {
     const spin = spinner("Initializing git...").start();
 
     try {
+      if (!(await isGit())) {
+        spin.fail(
+          "Git initialized skipped. Git is not installed! Go to https://git-scm.com/downloads to install it."
+        );
+        return false;
+      }
+
       await execa("git", ["init"], { cwd: filepath });
       await execa("git", ["add", "."], { cwd: filepath });
       await execa("git", ["commit", "-m", "Initial Commit"], { cwd: filepath });
@@ -103,6 +118,18 @@ export const installPkgs = async (options: Options) => {
     const filepath = `${process.cwd()}/${options.appName}`;
 
     try {
+      if (!(await isNode())) {
+        spin.fail("Node is not installed.");
+        return false;
+      }
+
+      if (!(await isYarn())) {
+        spin.fail(
+          "Yarn is not installed! Go to https://yarnpkg.com/getting-started/install to install it."
+        );
+        return false;
+      }
+
       await execa("yarn", { cwd: filepath });
       spin.succeed("Yarn installed");
 
@@ -123,18 +150,27 @@ export const installPkgs = async (options: Options) => {
   return false;
 };
 
-export const isGit = async (dir: string) => {
+export const isGit = async () => {
   try {
-    await execa("git", ["--version"], { cwd: dir });
+    execSync("git --version");
     return true;
   } catch (_e) {
     return false;
   }
 };
 
-export const isYarn = async (dir: string) => {
+export const isYarn = async () => {
   try {
-    await execa("yarn", ["--version"], { cwd: dir });
+    execSync("yarn --version");
+    return true;
+  } catch (_e) {
+    return false;
+  }
+};
+
+export const isNode = async () => {
+  try {
+    execSync("node --version");
     return true;
   } catch (_e) {
     return false;
