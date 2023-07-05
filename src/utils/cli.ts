@@ -5,14 +5,13 @@ import fs from "fs";
 import gradient from "gradient-string";
 import ora from "ora";
 import { Options } from "../cli/index.js";
-import { REPO_URL, ASCII_TEXT } from "../consts.js";
-import { logger } from "./logger.js";
+import { ASCII_TEXT, REPO_URL } from "../consts.js";
 
 const spinner = (text: string) => {
   return ora({
     text,
-    spinner: "circleQuarters",
-    color: "blue",
+    spinner: "dots",
+    color: "green",
   });
 };
 
@@ -55,21 +54,16 @@ export const createRepo = async (options: Options) => {
     } catch (err) {
       if (err instanceof Error) {
         if (!isGit()) {
-          spin.stopAndPersist({
-            symbol: "🛑",
-            text: `Repo cloning skipped. Git is not installed! Go to ${chalk.yellow(
+          spin.fail(
+            `Repo cloning skipped. Git is not installed! Go to ${chalk.yellow(
               "https://git-scm.com/downloads"
-            )} to download it.`,
-          });
+            )} to download it and then ${chalk.red("try again")}.\n`
+          );
 
           return false;
         }
 
-        spin.stopAndPersist({
-          symbol: "🛑",
-          text: `Repo cloning failed. ${chalk.red(err.message)}\n`,
-        });
-        logger.plain("\n");
+        spin.fail(`Repo cloning failed. ${chalk.red(err.message)}\n`);
         return false;
       }
     }
@@ -96,16 +90,14 @@ export const initGit = async (options: Options) => {
     } catch (err) {
       if (err instanceof Error) {
         if (!isGit()) {
-          spin.stopAndPersist({
-            symbol: "🛑",
-            text: "Git initialized skipped. Git is not installed! Go to https://git-scm.com/downloads to install it.\n",
-          });
+          spin.fail(
+            `Git initialized skipped. Git is not installed! Go to ${chalk.yellow(
+              "https://git-scm.com/downloads"
+            )} to install it and then ${chalk.red("try again")}.\n`
+          );
           return false;
         }
-        spin.stopAndPersist({
-          symbol: "🛑",
-          text: `Git initialized failed. ${chalk.red(err.message)}\n`,
-        });
+        spin.fail(`Git initialized failed. ${chalk.red(err.message)}\n`);
 
         return false;
       }
@@ -133,16 +125,14 @@ export const installPkgs = async (options: Options) => {
         }
 
         if (!isYarn()) {
-          spin.stopAndPersist({
-            symbol: "🛑",
-            text: "Yarn is not installed! Go to https://yarnpkg.com/getting-started/install to install it.\n",
-          });
+          spin.fail(
+            `Yarn is not installed! Go to ${chalk.yellow(
+              "https://yarnpkg.com/getting-started/install"
+            )} to install it and then ${chalk.red("try again")}.\n`
+          );
           return false;
         }
-        spin.stopAndPersist({
-          symbol: "🛑",
-          text: `Yarn install failed. ${chalk.red(err.message)}\n`,
-        });
+        spin.fail(`Yarn install failed. ${chalk.red(err.message)}\n`);
 
         return false;
       }
