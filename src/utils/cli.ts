@@ -1,12 +1,11 @@
+import chalk from "chalk";
 import { execSync } from "child_process";
 import { execa } from "execa";
-import figlet from "figlet";
 import fs from "fs";
 import gradient from "gradient-string";
 import ora from "ora";
 import { Options } from "../cli/index.js";
-import { REPO_URL } from "../consts.js";
-import chalk from "chalk";
+import { REPO_URL, ASCII_TEXT } from "../consts.js";
 import { logger } from "./logger.js";
 
 const spinner = (text: string) => {
@@ -17,17 +16,11 @@ const spinner = (text: string) => {
   });
 };
 
-export const figletText = (text: string) => {
+export const figletText = () => {
   console.log(
-    gradient.pastel(
-      figlet.textSync(text, {
-        font: "Small Slant",
-        whitespaceBreak: true,
-      }),
-      {
-        hsvSpin: "long",
-      }
-    )
+    gradient.pastel(ASCII_TEXT, {
+      hsvSpin: "long",
+    })
   );
 };
 

@@ -63,7 +63,7 @@ const runCli = async () => {
 
   program.parse(process.argv);
 
-  figletText(" create - se 2");
+  figletText();
 
   if (!(await checkNodeVersion(process.cwd()))) {
     logger.warn(
@@ -106,7 +106,7 @@ const runCli = async () => {
   let bool: Boolean = boolCreateRepo;
 
   if (options.flags.initGit && options.flags.installPkg) {
-  const boolInitGit = boolCreateRepo && (await initGit(options));
+    const boolInitGit = boolCreateRepo && (await initGit(options));
     bool = boolInitGit && (await installPkgs(options));
   }
 
