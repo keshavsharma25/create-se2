@@ -102,32 +102,23 @@ const runCli = async () => {
   logger.plain(`\n${chalk.magenta("⚙️ Scaffolding your app...")}\n`);
 
   const boolCreateRepo = await createRepo(options);
-  const boolInitGit = boolCreateRepo && (await initGit(options));
-  const boolInstallPkg = boolInitGit && (await installPkgs(options));
 
-  boolInstallPkg &&
-    (logger.success(
-      `\nYour ${chalk.bold(options.appName)} app has been created successfully!`
-    ),
-    logger.plain(
-      "\nTo get started, run the following commands:",
-      `\n\n\t${
-        chalk.gray.bold("$ ") + chalk.whiteBright(`cd ${options.appName}`)
-      }`,
-      `\n\n\t${
-        chalk.gray.bold("$ ") + chalk.whiteBright("yarn start")
-      } ${chalk.gray("// start your NextJS app")}`,
-      `\n\n\t${
-        chalk.gray.bold("$ ") + chalk.whiteBright("yarn chain")
-      } ${chalk.gray("// start your Local Hardhat node")}`,
-      `\n\n\t${
-        chalk.gray.bold("$ ") + chalk.whiteBright("yarn deploy")
-      } ${chalk.gray("// deploy your contracts to your local chain")}`,
-      `\n\n\t${
-        chalk.gray.bold("$ ") + chalk.whiteBright("yarn fork")
-      } ${chalk.gray("// fork the mainnet to your local chain")}`,
-      `\n\n`
-    ));
+  let bool: Boolean = boolCreateRepo;
+
+  if (options.flags.initGit && options.flags.installPkg) {
+  const boolInitGit = boolCreateRepo && (await initGit(options));
+    bool = boolInitGit && (await installPkgs(options));
+  }
+
+  if (options.flags.initGit && !options.flags.installPkg) {
+    bool = boolCreateRepo && (await initGit(options));
+  }
+
+  if (!options.flags.initGit && options.flags.installPkg) {
+    bool = boolCreateRepo && (await installPkgs(options));
+  }
+
+  bool && getSuccessMsg(options);
 };
 
 const getRepoName = async (): Promise<string> => {
@@ -175,6 +166,31 @@ const getInitGit = async (): Promise<boolean> => {
   });
 
   return bool;
+};
+
+const getSuccessMsg = (options: Options) => {
+  logger.success(
+    `\nYour ${chalk.bold(options.appName)} app has been created successfully!`
+  );
+  logger.plain(
+    "\nTo get started, run the following commands:",
+    `\n\n\t${
+      chalk.gray.bold("$ ") + chalk.whiteBright(`cd ${options.appName}`)
+    }`,
+    `\n\n\t${
+      chalk.gray.bold("$ ") + chalk.whiteBright("yarn start")
+    } ${chalk.gray("// start your NextJS app")}`,
+    `\n\n\t${
+      chalk.gray.bold("$ ") + chalk.whiteBright("yarn chain")
+    } ${chalk.gray("// start your Local Hardhat node")}`,
+    `\n\n\t${
+      chalk.gray.bold("$ ") + chalk.whiteBright("yarn deploy")
+    } ${chalk.gray("// deploy your contracts to your local chain")}`,
+    `\n\n\t${
+      chalk.gray.bold("$ ") + chalk.whiteBright("yarn fork")
+    } ${chalk.gray("// fork the mainnet to your local chain")}`,
+    `\n\n`
+  );
 };
 
 await runCli();
