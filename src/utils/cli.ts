@@ -1,3 +1,4 @@
+import { execSync } from "child_process";
 import { execa } from "execa";
 import figlet from "figlet";
 import fs from "fs";
@@ -5,9 +6,8 @@ import gradient from "gradient-string";
 import ora from "ora";
 import { Options } from "../cli/index.js";
 import { REPO_URL } from "../consts.js";
-import { logger } from "./logger.js";
 import chalk from "chalk";
-import { execSync } from "child_process";
+import { logger } from "./logger.js";
 
 const spinner = (text: string) => {
   return ora({
@@ -45,28 +45,39 @@ export const createRepo = async (options: Options) => {
   const name = options.appName;
   if (!(await ifDirExists(name))) {
     const spin = spinner(`Creating ${name} directory and cloning the repo...`);
-    spin.start();
     const filepath = `${process.cwd()}/${options.appName}`;
 
-    try {
-      if (!(await isGit())) {
-        spin.fail(
-          "Git is not installed! Go to https://git-scm.com/downloads to install it."
-        );
-        return false;
-      }
+    spin.start();
 
-      await execa("git", ["clone", REPO_URL, name], { cwd: process.cwd() });
-      await execa("rm", ["-rf", ".git"], { cwd: filepath });
+    try {
+      await execa("git", ["clone", REPO_URL, name], {
+        cwd: process.cwd(),
+      });
+
+      await execa("rm", ["-rf", ".git"], {
+        cwd: filepath,
+      });
 
       spin.succeed(`${chalk.blue(name)} created and repo cloned successfully!`);
     } catch (err) {
       if (err instanceof Error) {
-        logger.error(err.message);
+        if (!isGit()) {
+          spin.stopAndPersist({
+            symbol: "🛑",
+            text: `Repo cloning skipped. Git is not installed! Go to ${chalk.yellow(
+              "https://git-scm.com/downloads"
+            )} to download it.`,
+          });
+
+          return false;
+        }
+
         spin.stopAndPersist({
-          symbol: "❌",
-          text: "Directory creation and repo cloning failed",
+          symbol: "🛑",
+          text: `Repo cloning failed. ${chalk.red(err.message)}\n`,
         });
+        logger.plain("\n");
+        return false;
       }
     }
 
@@ -83,13 +94,6 @@ export const initGit = async (options: Options) => {
     const spin = spinner("Initializing git...").start();
 
     try {
-      if (!(await isGit())) {
-        spin.fail(
-          "Git initialized skipped. Git is not installed! Go to https://git-scm.com/downloads to install it."
-        );
-        return false;
-      }
-
       await execa("git", ["init"], { cwd: filepath });
       await execa("git", ["add", "."], { cwd: filepath });
       await execa("git", ["commit", "-m", "Initial Commit"], { cwd: filepath });
@@ -98,10 +102,16 @@ export const initGit = async (options: Options) => {
       return true;
     } catch (err) {
       if (err instanceof Error) {
-        logger.error(err.message);
+        if (!isGit()) {
+          spin.stopAndPersist({
+            symbol: "🛑",
+            text: "Git initialized skipped. Git is not installed! Go to https://git-scm.com/downloads to install it.\n",
+          });
+          return false;
+        }
         spin.stopAndPersist({
-          symbol: "❌",
-          text: "Git initialization failed",
+          symbol: "🛑",
+          text: `Git initialized failed. ${chalk.red(err.message)}\n`,
         });
 
         return false;
@@ -118,28 +128,27 @@ export const installPkgs = async (options: Options) => {
     const filepath = `${process.cwd()}/${options.appName}`;
 
     try {
-      if (!(await isNode())) {
-        spin.fail("Node is not installed.");
-        return false;
-      }
-
-      if (!(await isYarn())) {
-        spin.fail(
-          "Yarn is not installed! Go to https://yarnpkg.com/getting-started/install to install it."
-        );
-        return false;
-      }
-
-      await execa("yarn", { cwd: filepath });
+      await execa("yarn", { cwd: filepath, stdio: "ignore" });
       spin.succeed("Yarn installed");
 
       return true;
     } catch (err) {
       if (err instanceof Error) {
-        logger.error(err.message);
+        if (!isNode()) {
+          spin.fail("Node is not installed.");
+          return false;
+        }
+
+        if (!isYarn()) {
+          spin.stopAndPersist({
+            symbol: "🛑",
+            text: "Yarn is not installed! Go to https://yarnpkg.com/getting-started/install to install it.\n",
+          });
+          return false;
+        }
         spin.stopAndPersist({
-          symbol: "❌",
-          text: "Packages installation failed",
+          symbol: "🛑",
+          text: `Yarn install failed. ${chalk.red(err.message)}\n`,
         });
 
         return false;
@@ -150,27 +159,27 @@ export const installPkgs = async (options: Options) => {
   return false;
 };
 
-export const isGit = async () => {
+export const isGit = () => {
   try {
-    execSync("git --version");
+    execSync("git --version", { stdio: "ignore" });
     return true;
   } catch (_e) {
     return false;
   }
 };
 
-export const isYarn = async () => {
+export const isYarn = () => {
   try {
-    execSync("yarn --version");
+    execSync("yarn --version", { stdio: "ignore" });
     return true;
   } catch (_e) {
     return false;
   }
 };
 
-export const isNode = async () => {
+export const isNode = () => {
   try {
-    execSync("node --version");
+    execSync("node --version", { stdio: "ignore" });
     return true;
   } catch (_e) {
     return false;

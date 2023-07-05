@@ -63,7 +63,7 @@ const runCli = async () => {
 
   program.parse(process.argv);
 
-  figletText("create - se 2");
+  figletText(" create - se 2");
 
   if (!(await checkNodeVersion(process.cwd()))) {
     logger.warn(
@@ -87,45 +87,47 @@ const runCli = async () => {
     options.appName = await getRepoName();
   }
 
-  if (args["noInstall"]) {
-    options.flags.installPkg = false;
-  } else {
-    options.flags.installPkg = await getInstallPkgs();
-  }
-
   if (args["noGit"]) {
     options.flags.initGit = false;
   } else {
     options.flags.initGit = await getInitGit();
   }
 
-  await createRepo(options);
-  await installPkgs(options);
-  await initGit(options);
+  if (args["noInstall"]) {
+    options.flags.installPkg = false;
+  } else {
+    options.flags.installPkg = await getInstallPkgs();
+  }
 
-  logger.success(
-    `\nYour ${chalk.bold(options.appName)} app has been created successfully!`
-  );
+  logger.plain(`\n${chalk.magenta("⚙️ Scaffolding your app...")}\n`);
 
-  logger.plain(
-    "\n\nTo get started, run the following commands:",
-    `\n\n\t${
-      chalk.gray.bold("$ ") + chalk.whiteBright(`cd ${options.appName}`)
-    }`,
-    `\n\n\t${
-      chalk.gray.bold("$ ") + chalk.whiteBright("yarn start")
-    } ${chalk.gray("// start your NextJS app")}`,
-    `\n\n\t${
-      chalk.gray.bold("$ ") + chalk.whiteBright("yarn chain")
-    } ${chalk.gray("// start your Local Hardhat node")}`,
-    `\n\n\t${
-      chalk.gray.bold("$ ") + chalk.whiteBright("yarn deploy")
-    } ${chalk.gray("// deploy your contracts to your local chain")}`,
-    `\n\n\t${
-      chalk.gray.bold("$ ") + chalk.whiteBright("yarn fork")
-    } ${chalk.gray("// fork the mainnet to your local chain")}`,
-    `\n\n`
-  );
+  const boolCreateRepo = await createRepo(options);
+  const boolInitGit = boolCreateRepo && (await initGit(options));
+  const boolInstallPkg = boolInitGit && (await installPkgs(options));
+
+  boolInstallPkg &&
+    (logger.success(
+      `\nYour ${chalk.bold(options.appName)} app has been created successfully!`
+    ),
+    logger.plain(
+      "\nTo get started, run the following commands:",
+      `\n\n\t${
+        chalk.gray.bold("$ ") + chalk.whiteBright(`cd ${options.appName}`)
+      }`,
+      `\n\n\t${
+        chalk.gray.bold("$ ") + chalk.whiteBright("yarn start")
+      } ${chalk.gray("// start your NextJS app")}`,
+      `\n\n\t${
+        chalk.gray.bold("$ ") + chalk.whiteBright("yarn chain")
+      } ${chalk.gray("// start your Local Hardhat node")}`,
+      `\n\n\t${
+        chalk.gray.bold("$ ") + chalk.whiteBright("yarn deploy")
+      } ${chalk.gray("// deploy your contracts to your local chain")}`,
+      `\n\n\t${
+        chalk.gray.bold("$ ") + chalk.whiteBright("yarn fork")
+      } ${chalk.gray("// fork the mainnet to your local chain")}`,
+      `\n\n`
+    ));
 };
 
 const getRepoName = async (): Promise<string> => {
