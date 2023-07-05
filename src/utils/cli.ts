@@ -152,6 +152,14 @@ export const installPkgs = async (options: Options) => {
   return false;
 };
 
+export const rmDir = async (dir: string) => {
+  if (fs.existsSync(dir)) {
+    await execa("rm", ["-rf", dir], { cwd: process.cwd() });
+  }
+
+  return true;
+};
+
 export const isGit = () => {
   try {
     execSync("git --version", { stdio: "ignore" });

@@ -10,6 +10,7 @@ import {
   ifDirExists,
   initGit,
   installPkgs,
+  rmDir,
 } from "../utils/cli.js";
 import { logger } from "../utils/logger.js";
 
@@ -117,6 +118,8 @@ const runCli = async () => {
   if (!options.flags.initGit && options.flags.installPkg) {
     bool = boolCreateRepo && (await installPkgs(options));
   }
+
+  !bool && (await rmDir(options.appName));
 
   bool && getSuccessMsg(options);
 };
