@@ -1,6 +1,6 @@
 {
   "name": "create-se2",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "CLI tool to create a new scaffold-eth-2 project",
   "main": "src/cli/index.ts",
   "type": "module",
