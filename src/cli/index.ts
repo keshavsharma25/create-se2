@@ -179,8 +179,18 @@ const getSuccessMsg = (options: Options) => {
     "\nTo get started, run the following commands:",
     `\n\n\t${
       chalk.gray.bold("$ ") + chalk.whiteBright(`cd ${options.appName}`)
-    }`,
-    `\n\n\t${
+    }`
+  );
+
+  !options.flags.installPkg &&
+    logger.plain(
+      `\n\t${
+        chalk.gray.bold("$ ") + chalk.whiteBright("yarn install")
+      } ${chalk.gray("// install dependencies")}`
+    );
+
+  logger.plain(
+    `\n\t${
       chalk.gray.bold("$ ") + chalk.whiteBright("yarn start")
     } ${chalk.gray("// start your NextJS app")}`,
     `\n\n\t${
